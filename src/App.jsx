@@ -1,15 +1,3 @@
-
-function App() {
- 
-
-  return (
-    <>
-      
-      <p className="text-3xl font-bold underline">
-        ¡Hola Mundo!
-      </p>
-    </>
-  )
+export default function App() {
+  return null; // La app se monta con RouterProvider en main.jsx
 }
-
-export default App
