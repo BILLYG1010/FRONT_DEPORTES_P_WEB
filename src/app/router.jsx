@@ -4,9 +4,9 @@ import Dashboard from "../pages/Dashboard";
 import Profile from "../pages/Profile";
 import Tables from "../pages/Tables";
 import Notifications from "../pages/Notifications";
-import Clientes from "../pages/Clientes";  
-import Inventario from "../pages/Inventario"; 
-import Facturas from "../pages/Facturas";
+import Clientes from "../pages/ClientesViews/Clientes";  
+import Inventario from "../pages/InventarioViews/Inventario"; 
+import Facturas from "../pages/FacturasViews/Facturas";
 import Ajustes from "../pages/Ajustes";
 
 const router = createBrowserRouter([
