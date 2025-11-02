@@ -1,12 +1,19 @@
+// src/components/Topbar.jsx
 import { useLocation } from "react-router-dom";
 
-export default function Topbar({ onOpenSidebar }) {
+export default function Topbar({ onOpenSidebar, user }) {
   const { pathname } = useLocation();
   const crumb = pathname === "/" ? "home" : pathname.replace("/", "");
 
+  const displayName = user?.name ?? "Usuario";
+  const role = user?.role ?? "Administrador"; // muestra el rol debajo del nombre
+  const avatarUrl =
+    user?.avatarUrl ?? "https://i.pravatar.cc/100?img=12"; // reemplaza por tu URL
+
   return (
-    <nav className="w-full bg-transparent rounded-xl px-0 py-1">
-      <div className="flex flex-col-reverse gap-6 md:flex-row md:items-center md:justify-between">
+    <nav className="w-full bg-transparent rounded-xl px-0 py-0">
+      <div className="flex items-center justify-between gap-3">
+        {/* Breadcrumb + título */}
         <div className="capitalize">
           <nav aria-label="breadcrumb">
             <ol className="flex items-center">
@@ -20,16 +27,9 @@ export default function Topbar({ onOpenSidebar }) {
           <h6 className="text-base font-semibold text-slate-900">{crumb}</h6>
         </div>
 
-        <div className="flex items-center">
-          <div className="mr-auto md:mr-4 md:w-56">
-            <div className="relative h-10 min-w-[200px]">
-              <input
-                className="peer w-full h-full bg-transparent text-slate-700 outline-none border placeholder:text-slate-400 text-sm px-3 py-2.5 rounded-[7px] border-slate-200 focus:border-2 focus:border-blue-500"
-                placeholder="Search"
-              />
-            </div>
-          </div>
-
+        {/* Derecha: burger (mobile) + notificaciones + usuario */}
+        <div className="flex items-center gap-2">
+          {/* Abrir sidebar (solo mobile) */}
           <button
             onClick={onOpenSidebar}
             className="grid xl:hidden place-items-center h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-500/10"
@@ -37,21 +37,46 @@ export default function Topbar({ onOpenSidebar }) {
             aria-label="Open sidebar"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-              <path fillRule="evenodd" d="M3 6.75h18v1.5H3v-1.5zM3 12h18v1.5H3V12zm0 5.25h18v1.5H3v-1.5z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M3 6.75h18v1.5H3v-1.5zM3 12h18v1.5H3V12zm0 5.25h18v1.5H3v-1.5z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
 
-          <button className="grid place-items-center h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-500/10" type="button">
+          {/* Notificaciones */}
+          <button
+            className="grid place-items-center h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-500/10"
+            type="button"
+            aria-label="Notifications"
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
 
-          <button className="grid place-items-center h-10 w-10 rounded-lg text-slate-500 hover:bg-slate-500/10" type="button">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-              <path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.5 7.5 0 00-.986.57l-.45.083-1.006-.382A1.875 1.875 0 004.03 6.596l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.618 7.618 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57l.45-.082 1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382-.45-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348L12.922 3.82A1.875 1.875 0 0011.078 2.25h-.001zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd" />
-            </svg>
-          </button>
+          {/* Usuario: avatar + nombre (arriba) y rol (abajo) */}
+          <div className="flex items-center gap-3 pl-2">
+            <div className="h-10 w-10 rounded-full ring-2 ring-white/70 overflow-hidden">
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <p className="text-sm font-medium leading-tight text-slate-900">
+                {displayName}
+              </p>
+              <p className="text-xs text-slate-500 leading-tight">{role}</p>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

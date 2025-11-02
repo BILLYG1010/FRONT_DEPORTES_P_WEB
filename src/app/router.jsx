@@ -7,6 +7,7 @@ import Notifications from "../pages/Notifications";
 import Clientes from "../pages/Clientes";  
 import Inventario from "../pages/Inventario"; 
 import Facturas from "../pages/Facturas";
+import Ajustes from "../pages/Ajustes";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { path: "/clientes", element: <Clientes /> },
       { path: "/inventario", element: <Inventario /> },
       { path: "/facturas", element: <Facturas /> },
+      { path: "/ajustes", element: <Ajustes /> },
     ],
   },
 ]);

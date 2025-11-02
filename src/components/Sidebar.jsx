@@ -122,7 +122,7 @@ export default function Sidebar({ open, onClose }) {
             <p className="text-white opacity-75 font-black uppercase text-sm">auth pages</p>
           </li>
           <li>
-            <a href="#" className="flex items-center gap-4 px-4 py-3 rounded-lg text-white hover:bg-white/10">
+            <a href="Ajustes" className="flex items-center gap-4 px-4 py-3 rounded-lg text-white hover:bg-white/10">
               <Icon name="configuracion" />
               <p className="font-sans text-base font-medium capitalize">Ajustes</p>
             </a>
@@ -130,7 +130,7 @@ export default function Sidebar({ open, onClose }) {
           <li>
             <a href="#" className="flex items-center gap-4 px-4 py-3 rounded-lg text-white hover:bg-white/10">
               <Icon name="user" />
-              <p className="font-sans text-base font-medium capitalize">sign up</p>
+              <p className="font-sans text-base font-medium capitalize">Cerrar sesión</p>
             </a>
           </li>
         </ul>
