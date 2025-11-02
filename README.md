@@ -1,16 +1,63 @@
-# React + Vite
+# Dashboard Frontend — React + Vite + Tailwind
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interfaz web **administrativa** (dashboard) con diseño **minimalista**, **responsive** y preparada para conectar a una **API externa** (por ejemplo, .NET).  
+> **Nota**: Este repositorio se centra en **UI/UX y flujo**. Los **esquemas de base de datos** y contratos finales de backend **no están definidos al 100%** todavía.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Módulos incluidos
 
-## React Compiler
+- **Clientes**: vistas **Kanban** y **Lista** (búsqueda local).
+- **Inventario**: vistas **Kanban** (imagen cuadrada) y **Lista**.
+- **Facturas**: vistas **Kanban** y **Lista** con campos clave.
+- **Ajustes**:
+  - **Generales**: idioma, zona horaria, moneda, notificaciones.
+  - **Empresa**: logo, nombre legal, **NIT**, contacto, **FEL** (proveedor, ambiente, serie, API Key, frases FEL).
+  - **Usuario**: perfil, avatar, rol, 2FA, administración de usuarios.
+- **Layout**:
+  - **Sidebar** de navegación.
+  - **Topbar** con breadcrumb, **avatar + nombre + rol** y **notificaciones**.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+> Paleta: Tailwind (slate) + acentos **azules en gradiente**. Componentes limpios y consistentes.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🧰 Stack
+
+- **React 18+** (SPA con React Router)
+- **Vite** (dev server y build)
+- **Tailwind CSS**
+- **Fetch** con envoltura propia (timeout, headers, errores, baseURL por ambiente)
+- **Capa de servicios** (UI desacoplada del transporte HTTP)
+
+> Futuro opcional: `@tanstack/react-query`, validación `zod`, etc.
+
+---
+
+## 🚀 Requisitos
+
+- **Node.js 18+** (recomendado 20+)
+- **npm 9+** (o pnpm/yarn)
+
+---
+
+## 📦 Instalación rápida
+
+```bash
+# 1) Clonar
+git clone <tu-repo.git>
+cd <tu-repo>
+
+# 2) Instalar dependencias
+npm install
+
+# 3) Variables de entorno (ver sección Environments)
+cp .env.development.example .env.development
+cp .env.production.example  .env.production
+
+# 4) Desarrollo
+npm run dev   # http://localhost:5173
+
+# 5) Build de producción
+npm run build # genera /dist
+npm run preview
