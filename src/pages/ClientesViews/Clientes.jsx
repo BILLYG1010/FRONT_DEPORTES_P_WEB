@@ -1,15 +1,13 @@
-// src/pages/ClientesViews/Clientes.jsx
+// src/pages/ClientesViews/Clientes.jsx 
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { getClientes } from "../../services/clientes";
 
 /**
  * Clientes.jsx
- * - Mantiene el diseño (Kanban por defecto y Lista).
- * - En Kanban la IMAGEN:
- *   • Está pegada COMPLETAMENTE al borde izquierdo.
- *   • Ocupa TODO el alto de la tarjeta (sin márgenes arriba/abajo).
- *   • Si NO hay foto_url -> muestra iniciales.
- *   • Si hay foto_url pero falla la carga -> muestra bloque neutro (sin iniciales).
+ * - Vista Kanban (por defecto) y Lista.
+ * - Click en tarjeta (kanban) o en miniatura/nombre (lista) → navega a ClienteForm.
+ * - Header reemplazado por dos botones: "Nuevo cliente" y "Importar/exportar".
  */
 
 const statusBadgeClass = (s) =>
@@ -40,9 +38,9 @@ export default function Clientes() {
     setLoading(true);
     setError("");
     getClientes()
-      .then((data) => {
+      .then(({ items }) => {
         if (!alive) return;
-        setRows(Array.isArray(data) ? data : []);
+        setRows(Array.isArray(items) ? items : []);
       })
       .catch((e) => {
         if (!alive) return;
@@ -59,16 +57,7 @@ export default function Clientes() {
     if (!term) return rows;
     return rows.filter((c) => {
       const estado = c.activo ? "activo" : "inactivo";
-      return [
-        c.nombre,
-        c.empresa,
-        c.correo,
-        c.telefono,
-        c.nit,
-        c.tipo,
-        c.direccion,
-        estado,
-      ]
+      return [c.nombre, c.email, c.telefono, c.nit, c.tipo, c.direccion, estado]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
@@ -80,11 +69,20 @@ export default function Clientes() {
     <div className="space-y-6">
       {/* Header + acciones */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">Clientes</h1>
-          <p className="text-sm text-slate-500">
-            Gestiona tu cartera de clientes y cambia de vista cuando lo necesites.
-          </p>
+        {/* === Reemplazo del título/descripcion por los dos botones solicitados === */}
+        <div className="flex items-center gap-2">
+          <Link
+            to="/clientes/new"
+            className="h-10 rounded-lg bg-gradient-to-tr from-blue-600 to-blue-400 px-4 text-sm text-white grid place-items-center hover:opacity-95"
+          >
+            Nuevo cliente
+          </Link>
+          <Link
+            to="/clientes/import-export"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-700 hover:bg-slate-50"
+          >
+            Importar/exportar
+          </Link>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -104,7 +102,7 @@ export default function Clientes() {
             </span>
           </div>
 
-          {/* Toggle de vista */}
+          {/* Toggle vista */}
           <div className="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-white">
             <button
               onClick={() => setView("kanban")}
@@ -137,6 +135,8 @@ export default function Clientes() {
               <span className="hidden sm:inline">Lista</span>
             </button>
           </div>
+
+          {/* (El botón “Nuevo cliente” que estaba aquí fue eliminado) */}
         </div>
       </div>
 
@@ -172,67 +172,61 @@ function Kanban({ data }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {data.map((c) => (
-        <ClientCard key={c.id_cliente} c={c} />
+        <Link
+          key={c.id}
+          to={`/clientes/${c.id}`}
+          className="block overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm hover:shadow transition-shadow"
+        >
+          <ClientCard c={c} />
+        </Link>
       ))}
     </div>
   );
 }
 
 function ClientCard({ c }) {
-  const statusText = c.activo ? "Activo" : "Inactivo";
   const [imgError, setImgError] = useState(false);
   const hasUrl = Boolean(c.foto_url);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm hover:shadow transition-shadow">
-      {/* Layout sin márgenes: la imagen a la izquierda ocupa TODO el alto */}
-      <div className="flex items-stretch">
-        {/* Columna imagen, pegada a la izquierda y a todo el alto */}
-        <div className="w-24 flex-shrink-0">
-          {hasUrl && !imgError ? (
-            <img
-              src={c.foto_url}
-              alt={c.nombre}
-              className="h-full w-full object-cover"
-              loading="lazy"
-              onError={() => setImgError(true)}
-            />
-          ) : hasUrl && imgError ? (
-            // Hay URL pero falló: bloque neutro (sin iniciales)
-            <div className="h-full w-full bg-slate-200" />
-          ) : (
-            // No hay URL: mostrar iniciales
-            <div className="grid h-full w-full place-items-center bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-lg font-semibold">
-              {initials(c.nombre)}
-            </div>
-          )}
-        </div>
-
-        {/* Contenido (sin espacio extra arriba/abajo) */}
-        <div className="flex-1 p-4">
-          <div className="flex items-start justify-between">
-            <p className="truncate text-sm font-semibold text-slate-900">{safe(c.nombre)}</p>
-            <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] ${statusBadgeClass(statusText)}`}>
-              {statusText}
-            </span>
+    <div className="flex items-stretch">
+      {/* Imagen izquierda, toda la altura */}
+      <div className="w-24 flex-shrink-0">
+        {hasUrl && !imgError ? (
+          <img
+            src={c.foto_url}
+            alt={c.nombre}
+            className="h-full w-full object-cover"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        ) : hasUrl && imgError ? (
+          <div className="h-full w-full bg-slate-200" />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-lg font-semibold">
+            {initials(c.nombre)}
           </div>
+        )}
+      </div>
 
-          <p className="truncate text-xs text-slate-500">{safe(c.empresa)}</p>
+      {/* Contenido */}
+      <div className="relative flex-1 p-4 pr-16">
+        <p className="truncate text-sm font-semibold text-slate-900">{safe(c.nombre)}</p>
+        <p className="truncate text-xs text-slate-500">{safe(c.tipo)}</p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
-            <span className="inline-flex items-center gap-1">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2 5.5A2.5 2.5 0 014.5 3h2.1c.5 0 .93.34 1.06.83l.6 2.07c.1.34 0 .72-.28.95l-1.2.98a12.3 12.3 0 005.49 5.49l.98-1.2c.23-.27.61-.38.95-.28l2.07.6c.49.14.83.55.83 1.06v2.1A2.5 2.5 0 0118.5 22h-1A15.5 15.5 0 012 6.5v-1z" />
-              </svg>
-              {safe(c.telefono)}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0119.5 19.5h-15A2.25 2.25 0 012.25 17.25V6.75zm2.42.75l6.58 4.385a1.5 1.5 0 001.7 0L19.54 7.5H4.67z" />
-              </svg>
-              {safe(c.correo)}
-            </span>
-          </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+          <span className="inline-flex items-center gap-1">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2 5.5A2.5 2.5 0 014.5 3h2.1c.5 0 .93.34 1.06.83l.6 2.07c.1.34 0 .72-.28.95l-1.2.98a12.3 12.3 0 005.49 5.49l.98-1.2c.23-.27.61-.38.95-.28l2.07.6c.49.14.83.55.83 1.06v2.1A2.5 2.5 0 0118.5 22h-1A15.5 15.5 0 012 6.5v-1z" />
+            </svg>
+            {safe(c.telefono)}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0119.5 19.5h-15A2.25 2.25 0 012.25 17.25V6.75zm2.42.75l6.58 4.385a1.5 1.5 0 001.7 0L19.54 7.5H4.67z" />
+            </svg>
+            {safe(c.email)}
+          </span>
         </div>
       </div>
     </div>
@@ -250,7 +244,7 @@ function Lista({ data }) {
           <thead className="bg-slate-50">
             <tr>
               <Th>Cliente</Th>
-              <Th className="hidden md:table-cell">Empresa</Th>
+              <Th className="hidden md:table-cell">Tipo</Th>
               <Th className="hidden lg:table-cell">Teléfono</Th>
               <Th className="hidden lg:table-cell">Email</Th>
               <Th>Status</Th>
@@ -268,43 +262,44 @@ function Lista({ data }) {
               data.map((c) => {
                 const statusText = c.activo ? "Activo" : "Inactivo";
                 return (
-                  <tr key={c.id_cliente} className="border-b border-slate-100">
+                  <tr key={c.id} className="border-b border-slate-100">
                     <Td>
                       <div className="flex items-center gap-3">
-                        {/* Miniatura cuadrada (si hay URL y carga) */}
-                        {c.foto_url ? (
-                          <div className="h-9 w-9 overflow-hidden bg-slate-100">
+                        {/* Miniatura clickeable */}
+                        <Link to={`/clientes/${c.id}`} className="h-9 w-9 overflow-hidden bg-slate-100 shrink-0">
+                          {c.foto_url ? (
                             <img
                               src={c.foto_url}
                               alt={c.nombre}
                               className="h-full w-full object-cover"
                               loading="lazy"
                               onError={(e) => {
-                                // Si la imagen falla, mostrar bloque neutro
                                 e.currentTarget.style.display = "none";
                                 e.currentTarget.parentElement.style.background = "#e5e7eb";
                               }}
                             />
-                          </div>
-                        ) : (
-                          <div className="grid h-9 w-9 place-items-center bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-xs font-semibold">
-                            {initials(c.nombre)}
-                          </div>
-                        )}
+                          ) : (
+                            <div className="grid h-full w-full place-items-center bg-gradient-to-tr from-blue-600 to-blue-400 text-white text-xs font-semibold">
+                              {initials(c.nombre)}
+                            </div>
+                          )}
+                        </Link>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900">{safe(c.nombre)}</p>
-                          <p className="truncate text-xs text-slate-500 lg:hidden">{safe(c.correo)}</p>
+                          <Link to={`/clientes/${c.id}`} className="block truncate text-sm font-semibold text-slate-900 hover:underline">
+                            {safe(c.nombre)}
+                          </Link>
+                          <p className="truncate text-xs text-slate-500 lg:hidden">{safe(c.email)}</p>
                         </div>
                       </div>
                     </Td>
                     <Td className="hidden md:table-cell">
-                      <p className="text-sm text-slate-700">{safe(c.empresa)}</p>
+                      <p className="text-sm text-slate-700">{safe(c.tipo)}</p>
                     </Td>
                     <Td className="hidden lg:table-cell">
                       <p className="text-sm text-slate-700">{safe(c.telefono)}</p>
                     </Td>
                     <Td className="hidden lg:table-cell">
-                      <p className="truncate text-sm text-slate-700">{safe(c.correo)}</p>
+                      <p className="truncate text-sm text-slate-700">{safe(c.email)}</p>
                     </Td>
                     <Td>
                       <span className={`rounded-full px-2 py-0.5 text-xs ${statusBadgeClass(statusText)}`}>{statusText}</span>
@@ -321,11 +316,15 @@ function Lista({ data }) {
                             <path d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0119.5 19.5h-15A2.25 2.25 0 012.25 17.25V6.75zm2.42.75l6.58 4.385a1.5 1.5 0 001.7 0L19.54 7.5H4.67z" />
                           </svg>
                         </IconButton>
-                        <IconButton title="Ver">
+                        <Link
+                          to={`/clientes/${c.id}`}
+                          className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
+                          title="Ver/Editar"
+                        >
                           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 5c5.523 0 10 5 10 7s-4.477 7-10 7S2 14 2 12s4.477-7 10-7zm0 3a4 4 0 100 8 4 4 0 000-8z" />
                           </svg>
-                        </IconButton>
+                        </Link>
                       </div>
                     </Td>
                   </tr>
@@ -371,7 +370,7 @@ function ListaSkeleton() {
         <table className="w-full min-w-[720px] table-auto">
           <thead className="bg-slate-50">
             <tr>
-              {["Cliente", "Empresa", "Teléfono", "Email", "Status", "Acciones"].map((h) => (
+              {["Cliente", "Tipo", "Teléfono", "Email", "Status", "Acciones"].map((h) => (
                 <Th key={h}>{h}</Th>
               ))}
             </tr>
@@ -435,6 +434,7 @@ function IconButton({ children, title }) {
       title={title}
       className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
       type="button"
+      onClick={(e) => e.stopPropagation()}
     >
       {children}
     </button>
