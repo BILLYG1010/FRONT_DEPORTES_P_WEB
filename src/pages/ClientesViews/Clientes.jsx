@@ -7,7 +7,9 @@ import { getClientes } from "../../services/clientes";
  * Clientes.jsx
  * - Vista Kanban (por defecto) y Lista.
  * - Click en tarjeta (kanban) o en miniatura/nombre (lista) → navega a ClienteForm.
- * - Header reemplazado por dos botones: "Nuevo cliente" y "Importar/exportar".
+ * - Adaptado a Deportes API (.NET) ClienteDTO:
+ *   { id_cliente, nit, nombre, direccion, activo, creado_en, actualizado_en }
+ * - Campos futuros (aún no existen en la API): email, telefono, tipo, foto_url, empresa
  */
 
 const statusBadgeClass = (s) =>
@@ -26,6 +28,38 @@ const initials = (fullName = "") =>
 
 const safe = (v, fallback = "—") => (v == null || v === "" ? fallback : v);
 
+/**
+ * Adapter local: ClienteDTO (.NET) -> Cliente UI (frontend)
+ * Mantiene tu contrato actual sin tocar la vista.
+ */
+const mapClienteFromApi = (c = {}) => ({
+  // API .NET devuelve id_cliente → la UI espera id
+  id: c.id_cliente ?? c.id ?? null,
+
+  // Estos existen en el ClienteDTO actual
+  nit: c.nit ?? "",
+  nombre: c.nombre ?? "",
+  direccion: c.direccion ?? "",
+
+  // API trae activo como 0/1 (bit/ulong) → UI espera boolean
+  activo: c.activo === 1 || c.activo === true,
+
+  // --------------------------
+  // CAMPOS FUTUROS (NO EXISTEN AÚN EN EL BACKEND)
+  // Cuando los agregues en la tabla/DTO, solo quitás el fallback.
+  // --------------------------
+  email: c.email ?? null,          // TODO: agregar email/correo en API
+  telefono: c.telefono ?? null,    // TODO: agregar telefono en API
+  tipo: c.tipo ?? null,            // TODO: agregar tipo (INDIVIDUO|EMPRESA) en API
+  foto_url: c.foto_url ?? null,    // TODO: agregar foto_url en API
+  empresa: c.empresa ?? null,      // TODO: agregar empresa en API (si tipo=EMPRESA)
+  // --------------------------
+
+  // Extras (no usados por la vista hoy, pero quedan disponibles)
+  creado_en: c.creado_en ?? null,
+  actualizado_en: c.actualizado_en ?? null,
+});
+
 export default function Clientes() {
   const [view, setView] = useState("kanban"); // "kanban" | "list"
   const [q, setQ] = useState("");
@@ -37,16 +71,29 @@ export default function Clientes() {
     let alive = true;
     setLoading(true);
     setError("");
+
     getClientes()
-      .then(({ items }) => {
+      .then((res) => {
         if (!alive) return;
-        setRows(Array.isArray(items) ? items : []);
+
+        // Deportes API retorna array directo:
+        //   GET /api/v1.0/clientes  -> [ ClienteDTO, ... ]
+        // Pero soportamos también el formato viejo { items } por compatibilidad.
+        const apiItems = Array.isArray(res)
+          ? res
+          : Array.isArray(res?.items)
+          ? res.items
+          : [];
+
+        const mapped = apiItems.map(mapClienteFromApi);
+        setRows(mapped);
       })
       .catch((e) => {
         if (!alive) return;
         setError(e?.message || "Error al cargar clientes");
       })
       .finally(() => alive && setLoading(false));
+
     return () => {
       alive = false;
     };
@@ -55,9 +102,18 @@ export default function Clientes() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return rows;
+
     return rows.filter((c) => {
       const estado = c.activo ? "activo" : "inactivo";
-      return [c.nombre, c.email, c.telefono, c.nit, c.tipo, c.direccion, estado]
+      return [
+        c.nombre,
+        c.email,       // FUTURO: hoy será null hasta que exista en API
+        c.telefono,    // FUTURO
+        c.nit,
+        c.tipo,        // FUTURO
+        c.direccion,
+        estado,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
@@ -69,7 +125,6 @@ export default function Clientes() {
     <div className="space-y-6">
       {/* Header + acciones */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* === Reemplazo del título/descripcion por los dos botones solicitados === */}
         <div className="flex items-center gap-2">
           <Link
             to="/clientes/new"
@@ -108,7 +163,9 @@ export default function Clientes() {
               onClick={() => setView("kanban")}
               className={[
                 "px-3 py-2 text-sm flex items-center gap-2",
-                view === "kanban" ? "bg-gradient-to-tr from-blue-600 to-blue-400 text-white" : "text-slate-600 hover:bg-slate-50",
+                view === "kanban"
+                  ? "bg-gradient-to-tr from-blue-600 to-blue-400 text-white"
+                  : "text-slate-600 hover:bg-slate-50",
               ].join(" ")}
               title="Vista Kanban"
             >
@@ -123,7 +180,9 @@ export default function Clientes() {
               onClick={() => setView("list")}
               className={[
                 "px-3 py-2 text-sm flex items-center gap-2",
-                view === "list" ? "bg-gradient-to-tr from-blue-600 to-blue-400 text-white" : "text-slate-600 hover:bg-slate-50",
+                view === "list"
+                  ? "bg-gradient-to-tr from-blue-600 to-blue-400 text-white"
+                  : "text-slate-600 hover:bg-slate-50",
               ].join(" ")}
               title="Vista Lista"
             >
@@ -135,8 +194,6 @@ export default function Clientes() {
               <span className="hidden sm:inline">Lista</span>
             </button>
           </div>
-
-          {/* (El botón “Nuevo cliente” que estaba aquí fue eliminado) */}
         </div>
       </div>
 
@@ -186,11 +243,10 @@ function Kanban({ data }) {
 
 function ClientCard({ c }) {
   const [imgError, setImgError] = useState(false);
-  const hasUrl = Boolean(c.foto_url);
+  const hasUrl = Boolean(c.foto_url); // FUTURO: hoy será null
 
   return (
     <div className="flex items-stretch">
-      {/* Imagen izquierda, toda la altura */}
       <div className="w-24 flex-shrink-0">
         {hasUrl && !imgError ? (
           <img
@@ -209,10 +265,9 @@ function ClientCard({ c }) {
         )}
       </div>
 
-      {/* Contenido */}
       <div className="relative flex-1 p-4 pr-16">
         <p className="truncate text-sm font-semibold text-slate-900">{safe(c.nombre)}</p>
-        <p className="truncate text-xs text-slate-500">{safe(c.tipo)}</p>
+        <p className="truncate text-xs text-slate-500">{safe(c.tipo)}</p> {/* FUTURO */}
 
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
           <span className="inline-flex items-center gap-1">
@@ -265,7 +320,6 @@ function Lista({ data }) {
                   <tr key={c.id} className="border-b border-slate-100">
                     <Td>
                       <div className="flex items-center gap-3">
-                        {/* Miniatura clickeable */}
                         <Link to={`/clientes/${c.id}`} className="h-9 w-9 overflow-hidden bg-slate-100 shrink-0">
                           {c.foto_url ? (
                             <img
@@ -293,13 +347,13 @@ function Lista({ data }) {
                       </div>
                     </Td>
                     <Td className="hidden md:table-cell">
-                      <p className="text-sm text-slate-700">{safe(c.tipo)}</p>
+                      <p className="text-sm text-slate-700">{safe(c.tipo)}</p> {/* FUTURO */}
                     </Td>
                     <Td className="hidden lg:table-cell">
-                      <p className="text-sm text-slate-700">{safe(c.telefono)}</p>
+                      <p className="text-sm text-slate-700">{safe(c.telefono)}</p> {/* FUTURO */}
                     </Td>
                     <Td className="hidden lg:table-cell">
-                      <p className="truncate text-sm text-slate-700">{safe(c.email)}</p>
+                      <p className="truncate text-sm text-slate-700">{safe(c.email)}</p> {/* FUTURO */}
                     </Td>
                     <Td>
                       <span className={`rounded-full px-2 py-0.5 text-xs ${statusBadgeClass(statusText)}`}>{statusText}</span>

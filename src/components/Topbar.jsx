@@ -5,7 +5,7 @@ export default function Topbar({ onOpenSidebar, user }) {
   const { pathname } = useLocation();
   const crumb = pathname === "/" ? "home" : pathname.replace("/", "");
 
-  const displayName = user?.name ?? "Usuario";
+  const displayName = user?.name ?? "Billy Gallardo";
   const role = user?.role ?? "Administrador"; // muestra el rol debajo del nombre
   const avatarUrl =
     user?.avatarUrl ?? "https://i.pravatar.cc/100?img=12"; // reemplaza por tu URL

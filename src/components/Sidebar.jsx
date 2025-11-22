@@ -100,7 +100,7 @@ export default function Sidebar({ open, onClose }) {
     >
       <div className="relative border-b border-white/20">
         <NavLink to="/" className="flex items-center gap-4 py-6 px-8" onClick={onClose}>
-          <h6 className="text-white font-sans font-semibold text-base">Material Tailwind Dashboard</h6>
+          <h6 className="text-white font-sans font-semibold text-base">Sistema de Facturacion</h6>
         </NavLink>
         <button
           onClick={onClose}

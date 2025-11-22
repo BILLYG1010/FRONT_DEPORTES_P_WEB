@@ -94,39 +94,7 @@ export default function Login() {
                     className="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600"
                     aria-label={show ? "Ocultar contraseña" : "Mostrar contraseña"}
                   >
-                    {/* Iconos profesionales (eye / eye-off) */}
-                    {show ? (
-                      // Eye Slash (ocultar)
-                      <svg
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-10-8-10-8a18.5 18.5 0 014.76-5.94M9.9 4.24A10.94 10.94 0 0112 4c7 0 10 8 10 8a18.53 18.53 0 01-3.22 4.31" />
-                        <path d="M14.12 9.88a3 3 0 10-4.24 4.24" />
-                        <path d="M1 1l22 22" />
-                      </svg>
-                    ) : (
-                      // Eye (mostrar)
-                      <svg
-                        className="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
+                   
                   </button>
                 </div>
               </div>
